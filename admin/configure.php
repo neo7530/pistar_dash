@@ -2351,8 +2351,10 @@ if ($_SERVER["PHP_SELF"] == "/admin/configure.php") {
 	if  (empty($_POST['mmdvmDisplayPort']) != TRUE ) {
 	  if (($_POST['mmdvmDisplayPort'] == "None") || ($_POST['mmdvmDisplayPort'] == "modem")) {
 		  $configmmdvm['Nextion']['Port'] = $_POST['mmdvmDisplayPort'];
+                  $configmmdvm['Nextion']['BCPort'] = $_POST['mmdvmBCPort'];
 	  } else {
 		  $configmmdvm['Nextion']['Port'] = "/dev/".$_POST['mmdvmDisplayPort'];
+                  $configmmdvm['Nextion']['BCPort'] = $_POST['mmdvmBCPort'];
 	  }
 	}
 
@@ -2888,7 +2890,7 @@ if ($_SERVER["PHP_SELF"] == "/admin/configure.php") {
 	if (!isset($configmmdvm['POCSAG Network']['ModeHang'])) { $configmmdvm['POCSAG Network']['ModeHang'] = "5"; }
 	if (!isset($configmmdvm['POCSAG Network']['Debug'])) { $configmmdvm['POCSAG Network']['Debug'] = "0"; }
 	if (isset($configmmdvm['POCSAG Network']['ModeHang'])) { $configmmdvm['POCSAG Network']['ModeHang'] = "5"; }
-
+        if (!isset($configmmdvm['Nextion']['BCPort'])) { $configmmdvm['Nextion']['BCPort'] = "1234"; }
 	// Fix Demon mode on M17Gateway
 	if (isset($configm17gateway['General']['Daemon'])) { $configm17gateway['General']['Daemon'] = "1"; }
 
@@ -3837,7 +3839,7 @@ else:
                         echo '      <option selected="selected" value="'.$currentPort.'">'.$configmmdvm['Nextion']['Port'].'</option>'."\n";
                 }
             }
-            exec('ls /dev/ | egrep -h "ttyA|ttyUSB"', $availablePorts);
+            exec('ls /dev/ | egrep -h "ttyA|ttyUSB|ttyV"', $availablePorts);
             foreach($availablePorts as $port) {
                  echo "     <option value=\"$port\">/dev/$port</option>\n";
             }
@@ -3855,6 +3857,7 @@ else:
 	    <option <?php if ($configmmdvm['Nextion']['ScreenLayout'] == "3") {echo 'selected="selected" ';}; ?>value="ON7LDSL3">ON7LDS L3</option>
 	    <option <?php if ($configmmdvm['Nextion']['ScreenLayout'] == "4") {echo 'selected="selected" ';}; ?>value="ON7LDSL3HS">ON7LDS L3 HS</option>
 	    </select>
+            <br><b>Broadcast Port:</b>(for wireless Nextion Display) <input type="text" name="mmdvmBCPort" size="7" maxlength="5" value="<?php if (isset($configmmdvm['Nextion']['BCPort'])) { echo $configmmdvm['Nextion']['BCPort']; } else { echo "0"; } ?>" /></br>
     </td></tr>
     <!--<tr>
     <td align="left"><a class="tooltip2" href="#"><?php echo $lang['mode_hangtime'];?>:<span><b>Net Hang Time</b>Stay in the last mode for this many seconds</span></a></td>
