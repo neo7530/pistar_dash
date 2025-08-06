@@ -2,6 +2,7 @@
 require_once('config/version.php');
 require_once('config/ircddblocal.php');
 require_once('config/language.php');
+$ip = $_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname());
 $configs = array();
 if ($configfile = fopen($gatewayConfigPath,'r')) {
         while ($line = fgets($configfile)) {
@@ -38,6 +39,17 @@ $configPistarRelease = parse_ini_file($pistarReleaseConfig, true);
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" lang="en">
 <head>
+    <style>
+        h2,
+        p,
+        #live-gps,
+        #live-fix,
+        #live-speed {
+                color: white;
+        }
+        button { margin: 5px; }
+    </style>
+
     <meta name="robots" content="index" />
     <meta name="robots" content="follow" />
     <meta name="language" content="English" />
@@ -98,6 +110,8 @@ if ( ($_SERVER["PHP_SELF"] == "/admin/index.php") && ($configPistarRelease['Pi-S
   echo ' <a href="/admin/update.php" style="color: #ffffff;">'.$lang['update'].'</a> |'."\n";
   } ?>
  <a href="/admin/configure.php" style="color: #ffffff;"><?php echo $lang['configuration'];?></a>
+<div id="live-gps">Warten auf Daten...</div>
+    <div id="live-fix">Fix-Status: unbekannt</div>
 </p>
 </div>
 
@@ -346,6 +360,30 @@ Get your copy of Pi-Star from <a style="color: #ffffff;" href="http://www.pistar
 </div>
 
 </div>
+
+<script>
+function ladeLiveDaten() {
+     fetch(`http://<?php echo $ip ?>:8081/status`)
+        .then(res => res.json())
+        .then(data => {
+                document.getElementById('live-gps').textContent = 'GPS: ' + data.lat.toFixed(6) + ', ' + data.lon.toFixed(6);
+                document.getElementById('live-fix').textContent = 'Fix: ' + (data.fix ? 'Ja ✔️' : 'Nein ❌');
+
+        })
+        .catch(err => {
+            console.error('Fehler beim Laden der Live-Daten:', err);
+            document.getElementById('live-gps').textContent = 'GPS: Fehler 😢';
+            document.getElementById('live-fix').textContent = 'Fix: Fehler 😢';
+        });
+}
+
+// Alle 5 Sekunden abrufen
+setInterval(ladeLiveDaten, 5000);
+// Und direkt einmal beim Start
+ladeLiveDaten();
+</script>
+
+
 </body>
 <script type="text/javascript" src="/nice-select.min.js"></script>
 <script type="text/javascript">
